@@ -1,3 +1,6 @@
+import 'dart:math';
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,6 +9,7 @@ import 'package:flutter_application_1/modals/UIHelper.dart';
 import 'package:flutter_application_1/modals/userModals.dart';
 import 'package:flutter_application_1/pages/SignUp.dart';
 import 'package:flutter_application_1/pages/home_page.dart';
+import 'package:flutter_application_1/pages/loginwithphone.dart';
 import 'package:flutter_application_1/pages/postscreen.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -105,7 +109,12 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   color: Theme.of(context).colorScheme.secondary,
                 ),
-                TextButton(onPressed: () {}, child: Text(" OR Login with OTP")),
+                TextButton(
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => madara()));
+                    },
+                    child: Text(" OR Login with OTP")),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -123,18 +132,12 @@ class _LoginPageState extends State<LoginPage> {
                       width: 10,
                     ),
                     GestureDetector(
-                      onTap: () {
-                        // debugPrint(
-                        //     "Sign in with Facebook failed: ${toString()}");
-                        signInWithFacebook();
-                        // Navigator.push(context,
-                        //     MaterialPageRoute(builder: (context) {
-                        //   return FacebookAuthentication();
-                        // }));
+                      onTap: () async {
+                        await signInWithFacebook();
                       },
                       child: Icon(
                         Icons.facebook,
-                        size: 60,
+                        size: 50,
                         color: Colors.blue,
                       ),
                     )
@@ -177,18 +180,21 @@ class _LoginPageState extends State<LoginPage> {
           .signInWithCredential(facebookAuthCredential);
 
       if (context.mounted) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const PostScreen()));
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return HomePage(
+              userModal: UserModal(), firebaseUser: userCredential.user!);
+        }));
+        debugPrint("Sign in with Facebook failed: ${e.toString()}");
       }
     } catch (e) {
       // Handle and display the error to the user
       // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Sign in with Facebook failed: ${e.toString()}"),
-          duration: const Duration(seconds: 10),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Sign in with Facebook failed: ${e.toString()}"),
+        duration: const Duration(seconds: 10),
+      )
+          // debugPrint("Sign in with Facebook failed: ${e.toString()}");
+          );
     }
   }
   // Future<void> signInWithFacebook() async {
@@ -256,10 +262,17 @@ class _LoginPageState extends State<LoginPage> {
       // You can access the signed-in user using userCredential.user
       User? user = userCredential.user;
 
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return HomePage(userModal: UserModal(), firebaseUser: user!);
+        },
+      ));
+
       // Handle the successful sign-in here
       // For example, you can show a success message or navigate to a new screen.
     } catch (e) {
       // Handle the error here
+      debugPrint("Sign in with Google failed: ${e.toString()}");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Sign in with Google failed: ${e.toString()}"),
